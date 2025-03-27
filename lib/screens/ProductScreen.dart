@@ -4,6 +4,8 @@ import 'package:gk_dnt/screens/LoginPage.dart';
 import 'package:gk_dnt/screens/Add_Product.dart'; // Để tạo mới sản phẩm
 import 'package:gk_dnt/controllers/product_controller.dart'; // Để tương tác với controller
 import 'package:gk_dnt/model/product.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class ProductScreen extends StatefulWidget {
   @override
@@ -15,12 +17,18 @@ class _ProductScreenState extends State<ProductScreen> {
   String? selectedCategory;
   List<String> categories = [];
   TextEditingController searchController = TextEditingController();
-  String searchQuery = '';  // Lưu từ khóa tìm kiếm
+  String searchQuery = ''; // Lưu từ khóa tìm kiếm
+
+  List<Product> products = [];
+
+  final ImagePicker _picker = ImagePicker();
+  late File _imageFile;
 
   @override
   void initState() {
     super.initState();
     _loadCategories();
+    _loadProducts();
   }
 
   // Hàm tải các loại sản phẩm
@@ -32,8 +40,15 @@ class _ProductScreenState extends State<ProductScreen> {
   // Hàm xử lý tìm kiếm theo từ khóa
   void _searchProducts(String query) {
     setState(() {
-      searchQuery = query.toLowerCase();  // Lưu từ khóa tìm kiếm
+      searchQuery = query.toLowerCase(); // Lưu từ khóa tìm kiếm
     });
+  }
+
+  // Hàm load dữ liệu sản phẩm
+  Future<void> _loadProducts() async {
+    // Giả sử bạn có hàm getProducts() để lấy tất cả sản phẩm
+    products = await productController.getProducts();
+    setState(() {});
   }
 
   // Hàm logout
@@ -52,7 +67,8 @@ class _ProductScreenState extends State<ProductScreen> {
         backgroundColor: Colors.blueAccent,
         title: Text(
           'Danh Sách Sản Phẩm',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+              fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         elevation: 5,
         actions: [
@@ -87,18 +103,22 @@ class _ProductScreenState extends State<ProductScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Lọc:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                Text('Lọc:',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                 DropdownButton<String>(
                   dropdownColor: Colors.white,
                   value: selectedCategory,
-                  hint: Text('Tất cả', style: TextStyle(fontSize: 16, color: Colors.black)),
+                  hint: Text('Tất cả',
+                      style: TextStyle(fontSize: 16, color: Colors.black)),
                   icon: Icon(Icons.arrow_drop_down, color: Colors.black),
                   items: ['Tất cả', ...categories].map((category) {
                     return DropdownMenuItem<String>(
                       value: category == 'Tất cả' ? null : category,
                       child: Text(
                         category,
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500),
                       ),
                     );
                   }).toList(),
@@ -122,19 +142,25 @@ class _ProductScreenState extends State<ProductScreen> {
 
                 if (snapshot.hasError) {
                   return Center(
-                      child: Text('Có lỗi xảy ra', style: TextStyle(fontSize: 18, color: Colors.red)));
+                      child: Text('Có lỗi xảy ra',
+                          style: TextStyle(fontSize: 18, color: Colors.red)));
                 }
 
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return Center(
                       child: Text('Không có sản phẩm',
-                          style: TextStyle(fontSize: 18, fontStyle: FontStyle.italic)));
+                          style: TextStyle(
+                              fontSize: 18, fontStyle: FontStyle.italic)));
                 }
 
                 final products = snapshot.data!
                     .where((product) =>
-                product.name.toLowerCase().contains(searchQuery) || // Tìm kiếm theo tên
-                    product.loaisp.toLowerCase().contains(searchQuery)) // Tìm kiếm theo loại
+                        product.name
+                            .toLowerCase()
+                            .contains(searchQuery) || // Tìm kiếm theo tên
+                        product.loaisp
+                            .toLowerCase()
+                            .contains(searchQuery)) // Tìm kiếm theo loại
                     .toList();
 
                 return ListView.builder(
@@ -154,22 +180,39 @@ class _ProductScreenState extends State<ProductScreen> {
                         leading: CircleAvatar(
                           backgroundColor: Colors.blueAccent,
                           radius: 25,
-                          child: Icon(Icons.shopping_bag, color: Colors.white),
+                          child: product.hinhanh.isEmpty
+                              ? Icon(
+                                  Icons
+                                      .shopping_bag, // Hiển thị icon sản phẩm nếu không có ảnh
+                                  color: Colors.white,
+                                  size: 30,
+                                )
+                              : Image.file(
+                                  File(product
+                                      .hinhanh), // Hiển thị ảnh từ tệp cục bộ nếu là đường dẫn tệp
+                                  fit: BoxFit.cover,
+                                  width: 50,
+                                  height: 50,
+                                ),
                         ),
                         title: Text(
                           product.name,
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SizedBox(height: 5),
                             Text('Loại: ${product.loaisp}',
-                                style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic)),
+                                style: TextStyle(
+                                    fontSize: 16, fontStyle: FontStyle.italic)),
                             Text(
                               'Giá: ${NumberFormat('#,###', 'vi_VN').format(product.gia)}đ',
-                              style:
-                              TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green),
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.green),
                             ),
                           ],
                         ),
@@ -182,7 +225,8 @@ class _ProductScreenState extends State<ProductScreen> {
                                 bool? result = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => ProductForm(product: product),
+                                    builder: (context) =>
+                                        ProductForm(product: product),
                                   ),
                                 );
                                 if (result == true) _loadCategories();
@@ -196,26 +240,34 @@ class _ProductScreenState extends State<ProductScreen> {
                                   builder: (ctx) => AlertDialog(
                                     title: Text(
                                       "Xác nhận",
-                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
                                     ),
-                                    content: Text("Bạn có chắc chắn muốn xóa sản phẩm này?",
+                                    content: Text(
+                                        "Bạn có chắc chắn muốn xóa sản phẩm này?",
                                         style: TextStyle(fontSize: 16)),
                                     actions: [
                                       ElevatedButton(
-                                        style:
-                                        ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                                        style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.grey),
                                         onPressed: () => Navigator.pop(ctx),
-                                        child: Text("Hủy", style: TextStyle(color: Colors.white)),
+                                        child: Text("Hủy",
+                                            style:
+                                                TextStyle(color: Colors.white)),
                                       ),
                                       ElevatedButton(
-                                        style:
-                                        ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                        style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red),
                                         onPressed: () {
-                                          productController.deleteProduct(product.idsanpham);
+                                          productController
+                                              .deleteProduct(product.idsanpham);
                                           Navigator.pop(ctx);
                                           _loadCategories();
                                         },
-                                        child: Text("Xóa", style: TextStyle(color: Colors.white)),
+                                        child: Text("Xóa",
+                                            style:
+                                                TextStyle(color: Colors.white)),
                                       ),
                                     ],
                                   ),

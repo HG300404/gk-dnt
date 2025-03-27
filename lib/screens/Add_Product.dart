@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../controllers/product_controller.dart';
 import '../model/product.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class ProductForm extends StatefulWidget {
   final Product? product;
@@ -18,6 +20,9 @@ class _ProductFormState extends State<ProductForm> {
 
   final ProductController productController = ProductController();
 
+  File? _image;
+  String hinhanh = '';
+
   @override
   void initState() {
     super.initState();
@@ -25,6 +30,7 @@ class _ProductFormState extends State<ProductForm> {
       _nameController.text = widget.product!.name;
       _typeController.text = widget.product!.loaisp;
       _priceController.text = widget.product!.gia.toString();
+      hinhanh = widget.product!.hinhanh;
     }
   }
 
@@ -42,20 +48,34 @@ class _ProductFormState extends State<ProductForm> {
           name: name,
           loaisp: type,
           gia: price,
-          hinhanh: "",
+          hinhanh: hinhanh,
         );
+        print("add");
         productController.addProduct(newProduct);
       } else {
         Product updatedProduct = widget.product!.copyWith(
           name: name,
           loaisp: type,
           gia: price,
-          hinhanh: "",
+          hinhanh: hinhanh,
         );
         productController.updateProduct(updatedProduct);
       }
 
       Navigator.pop(context, true);
+    }
+  }
+
+  // Hàm chọn hình ảnh từ thiết bị
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery); // Chọn hình ảnh từ thư viện
+
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path); // Lưu đường dẫn hình ảnh
+        hinhanh = _image!.path; // Lưu đường dẫn vào biến hinhanh
+      });
     }
   }
 
@@ -110,6 +130,17 @@ class _ProductFormState extends State<ProductForm> {
                   ),
                   keyboardType: TextInputType.number,
                 ),
+                SizedBox(height: 20),
+                // Chọn hình ảnh sản phẩm
+                ElevatedButton(
+                  onPressed: _pickImage,  // Gọi hàm chọn hình ảnh từ thiết bị
+                  child: Text('Chọn Hình Ảnh'),
+                ),
+                hinhanh.isNotEmpty
+                    ? Image.file(File(hinhanh))  // Hiển thị hình ảnh đã chọn hoặc hình ảnh đã có trong product
+                    : Text('Chưa chọn hình ảnh'),  // Nếu không có hình ảnh, hiển thị thông báo
+
+
                 SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,

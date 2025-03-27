@@ -1,0 +1,2 @@
+E:/uddnt/gk_dnt/android/app/.cxx/Debug/6d6l4m1v/arm64-v8a/CMakeFiles/edit_cache.dir
+E:/uddnt/gk_dnt/android/app/.cxx/Debug/6d6l4m1v/arm64-v8a/CMakeFiles/rebuild_cache.dir

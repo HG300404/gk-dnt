@@ -53,7 +53,6 @@ class Product {
     };
   }
 
-  // Hàm tạo ID ngẫu nhiên dài 10 ký tự
   static String generateRandomId() {
     const _chars = '0123456789';
     Random _rnd = Random();
